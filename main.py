@@ -1,3 +1,17 @@
+"""
+FastAPI application that serves predictions of the best model from MLflow.
+
+The model file (model.joblib) and its info (model_info.json) are created by train.py:
+the best run is registered in the MLflow Model Registry and exported for the API.
+
+Endpoints:
+    GET  /            -> checks that the API is running
+    GET  /model-info  -> registered model name, version, metrics
+    POST /predict     -> takes 4 flower measurements and returns the predicted species
+    GET  /docs        -> interactive Swagger documentation
+"""
+
+import json
 from pathlib import Path
 
 import joblib
@@ -5,17 +19,22 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-MODEL_PATH = Path(__file__).parent / "model.joblib"
+BASE_DIR = Path(__file__).parent
+MODEL_PATH = BASE_DIR / "model.joblib"
+INFO_PATH = BASE_DIR / "model_info.json"
 
 app = FastAPI(
     title="Iris Classifier API",
-    description="Simple ML API: predicts the iris species from flower measurements.",
-    version="1.0.0",
+    description="ML API: predicts the iris species from flower measurements. "
+                "The model is tracked and registered with MLflow.",
+    version="2.0.0",
 )
 
+# Load the trained model once when the app starts
 if not MODEL_PATH.exists():
     raise RuntimeError("model.joblib not found. Run `python train.py` first.")
 model = joblib.load(MODEL_PATH)
+model_info = json.loads(INFO_PATH.read_text()) if INFO_PATH.exists() else {}
 
 
 class IrisFeatures(BaseModel):
@@ -43,6 +62,8 @@ class IrisFeatures(BaseModel):
 class PredictionResponse(BaseModel):
     prediction: str
     probabilities: dict[str, float]
+    model_name: str | None = None
+    model_version: str | None = None
 
 
 @app.get("/")
@@ -50,8 +71,16 @@ def root():
     return {"message": "ML API is running"}
 
 
+@app.get("/model-info")
+def get_model_info():
+    if not model_info:
+        raise HTTPException(status_code=404, detail="model_info.json not found")
+    return model_info
+
+
 @app.post("/predict", response_model=PredictionResponse)
 def predict(features: IrisFeatures):
+    # Same feature order as in training
     x = np.array([[
         features.sepal_length,
         features.sepal_width,
@@ -70,4 +99,6 @@ def predict(features: IrisFeatures):
         "probabilities": {
             str(cls): round(float(p), 4) for cls, p in zip(model.classes_, proba)
         },
+        "model_name": model_info.get("model_name"),
+        "model_version": model_info.get("model_version"),
     }

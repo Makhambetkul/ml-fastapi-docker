@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#6E9E45"              # leaf green: sliders, focus, primary button
+backgroundColor = "#F3F9EC"           # fresh light green
+secondaryBackgroundColor = "#E4F0D6"  # sidebar and inputs
+textColor = "#3E5529"                 # dark leaf green text
+font = "sans serif"

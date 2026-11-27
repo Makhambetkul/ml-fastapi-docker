@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    container_name: iris-api
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: iris-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      # Inside Docker the frontend reaches the API by its service name
+      - API_URL=http://api:8000
+    depends_on:
+      - api

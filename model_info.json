@@ -1,0 +1,20 @@
+{
+  "model_name": "iris-classifier",
+  "model_version": "1",
+  "alias": "champion",
+  "run_id": "799141adee2d44f6a0e12e6b05dcde9b",
+  "run_name": "logreg_C10",
+  "model_type": "LogisticRegression",
+  "params": {
+    "C": 10.0,
+    "max_iter": 1000
+  },
+  "metrics": {
+    "accuracy": 1.0,
+    "f1_macro": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "cv_f1_mean": 0.9663,
+    "cv_f1_std": 0.0316
+  }
+}

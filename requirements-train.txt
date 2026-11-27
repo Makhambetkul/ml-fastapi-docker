@@ -1,0 +1,5 @@
+# Training with MLflow tracking and Model Registry (run locally: python train.py)
+mlflow>=3.14
+scikit-learn>=1.4
+joblib>=1.3
+numpy>=1.26
